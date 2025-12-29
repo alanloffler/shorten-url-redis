@@ -5,14 +5,18 @@ import (
 	"log"
 	"os"
 
+	"github.com/alanloffler/shorten-url-fiber-redis/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 )
 
 func setupRoutes(app *fiber.App) {
+	app.Get("/", routes.GetAll)
 	app.Get("/:url", routes.ResolveURL)
-	app.Post("/api/v1", routes.ShortenURL)
+	app.Get("/api/rate-limit", routes.GetRateLimit)
+	app.Post("/api", routes.ShortenURL)
+	app.Delete("/api/rate-limit", routes.ClearRateLimit)
 }
 
 func main() {
