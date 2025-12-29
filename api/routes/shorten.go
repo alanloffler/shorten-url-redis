@@ -108,3 +108,43 @@ func ShortenURL(c *fiber.Ctx) error {
 	resp.CustomShort = os.Getenv("DOMAIN") + "/" + id
 	return c.Status(fiber.StatusOK).JSON(resp)
 }
+
+func DeleteURL(c *fiber.Ctx) error {
+	shortURL := c.Params("url")
+
+	if shortURL == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "URL parameter is required",
+		})
+	}
+
+	r := database.CreateClient(0)
+	defer r.Close()
+
+	val, err := r.Get(database.Ctx, shortURL).Result()
+	if err == redis.Nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Short URL not found",
+			"short": shortURL,
+		})
+	}
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Unable to retrieve URL",
+		})
+	}
+
+	err = r.Del(database.Ctx, shortURL).Err()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Unable to delete URL",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "URL deleted successfully",
+		"short":       shortURL,
+		"deleted_url": val,
+	})
+}
