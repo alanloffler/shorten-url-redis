@@ -16,6 +16,7 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/:url", routes.ResolveURL)
 	app.Get("/api/rate-limit", routes.GetRateLimit)
 	app.Post("/api", routes.ShortenURL)
+	app.Delete("/api/:url", routes.DeleteURL)
 	app.Delete("/api/rate-limit", routes.ClearRateLimit)
 }
 
